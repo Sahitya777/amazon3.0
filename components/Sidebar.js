@@ -1,4 +1,4 @@
-import React from 'react'
+import React,{useContext} from 'react'
 import { ConnectButton } from 'web3uikit'
 import Image from 'next/image';
 import Link from 'next/link';
@@ -8,6 +8,7 @@ import {FaBox} from 'react-icons/fa'
 import { AiOutlineHistory } from 'react-icons/ai'
 import { BsFillBookmarkFill } from 'react-icons/bs'
 import { BsFillPersonFill } from 'react-icons/bs'
+import { AmazonContext } from '../context/AmazonContext';
 const Sidebar = () => {
     const styles={
         container: `h-full w-[300px] flex flex-col bg-[#fff] static`,
@@ -24,8 +25,16 @@ const Sidebar = () => {
         username: `flex items-center w-full justify-center`,
         setNickname: `text-lg font-bold flex flex-1 items-center mt-[20px] mb-[20px] text-white`,
     }
-    const isAuthenticated=true;
-    const username='Lance'
+
+
+    const {
+        isAuthenticated,
+        nickname,
+        setnickname,
+        username,
+        handleSetUsername,
+    }=useContext(AmazonContext)
+    console.log(username);
   return (
     <div className={styles.container}>
         <div className={styles.profile}>
@@ -48,11 +57,14 @@ const Sidebar = () => {
                                 type="text"
                                 placeholder='Username...'
                                 className={styles.usernameInput}
+                                value={nickname}
+                                onChange={e=>setnickname(e.target.value)}
                             />
 
                         </div>
                         <button
                             className={styles.setNickname}
+                            onClick={handleSetUsername}
                         >
                             Set Nickname
                         </button>
@@ -61,7 +73,6 @@ const Sidebar = () => {
                             <div>
                                 <div className={styles.welcome}>
                                     Welcome {username}
-
                                 </div>
                             </div>
                         )}
