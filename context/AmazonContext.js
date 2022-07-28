@@ -14,31 +14,28 @@ export const AmazonProvider =({children})=>{
         Moralis,
         user,
         isWeb3Enabled,
-      } = useMoralis()
-
-      useEffect(()=>{
-        ;(async()=>{
-            if(isAuthenticated){
-                const currentUsername = await user?.get('nickname')
-                setUsername(currentUsername)
-            }
-        })
-      },[isAuthenticated,user,username])
-
-      const handleSetUsername=()=>{
-        if(user){
-            if(nickname){
-                user.set('nickname',nickname)
-                user.save()
-                setnickname('')
-            }else{
-                console.log('nick')
-            }
-        }
-        else{
-            console.log('no');
+    } = useMoralis()
+    
+    const handleSetUsername = () => {
+        if (user) {
+          if (nickname) {
+            user.set('nickname', nickname)
+            user.save()
+            setnickname('')
+          } else {
+            console.log("Can't set empty nickname")
+          }
+        } else {
+          console.log('No user')
         }
       }
+      useEffect(async ()=>{
+        if(isAuthenticated){
+            const currentUsername = await user?.get('nickname')
+            setUsername(currentUsername)
+        }
+      },[isAuthenticated,user,username])
+
 
     return(
         <AmazonContext.Provider
