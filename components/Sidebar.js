@@ -34,7 +34,7 @@ const Sidebar = () => {
         username,
         handleSetUsername,
     }=useContext(AmazonContext)
-    console.log(username);
+   
   return (
     <div className={styles.container}>
         <div className={styles.profile}>

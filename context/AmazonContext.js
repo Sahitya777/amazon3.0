@@ -1,11 +1,12 @@
 import { createContext,useState,useEffect } from "react";
-import {useMoralis} from 'react-moralis'
+import {useMoralis, useMoralisQuery} from 'react-moralis'
 
 export const AmazonContext=createContext()
 
 export const AmazonProvider =({children})=>{
     const [username,setUsername]=useState('')
     const [nickname, setnickname] = useState('')
+    const [assets,setAssets]=useState([])
 
     const {
         authenticate,
@@ -15,7 +16,39 @@ export const AmazonProvider =({children})=>{
         user,
         isWeb3Enabled,
     } = useMoralis()
+
+    const {
+      data:assetsData,
+      error:assetsDataError,
+      isLoading:assetsDataisLoading,
+    }=useMoralisQuery('assets')
     
+    const getAssets= async()=>{
+      try{
+        await enableWeb3()
+        setAssets(assetsData)
+      }catch(error){
+        console.log(error);
+      }
+    }
+    
+    useEffect(async()=>{
+      await enableWeb3()
+      await getAssets()
+    },[assetsData,assetsDataisLoading])
+
+    useEffect(async ()=>{
+      if(!isWeb3Enabled){
+        await enableWeb3()
+      }
+      if(isAuthenticated){
+          const currentUsername = await user?.get('nickname')
+          setUsername(currentUsername)
+      }
+    },[isWeb3Enabled,isAuthenticated,user,username])
+
+
+
     const handleSetUsername = () => {
         if (user) {
           if (nickname) {
@@ -29,12 +62,7 @@ export const AmazonProvider =({children})=>{
           console.log('No user')
         }
       }
-      useEffect(async ()=>{
-        if(isAuthenticated){
-            const currentUsername = await user?.get('nickname')
-            setUsername(currentUsername)
-        }
-      },[isAuthenticated,user,username])
+
 
 
     return(
@@ -45,7 +73,8 @@ export const AmazonProvider =({children})=>{
                 setnickname,
                 username,
                 setUsername,
-                handleSetUsername
+                handleSetUsername,
+                assets
             }}
         >
             {children}
