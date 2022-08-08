@@ -51,7 +51,7 @@ const Header = () => {
               className={(styles.balance, styles.menuItem)}
               onClick={openModal}
             >
-              {balance}
+              {balance} AC
               <FaCoins className={styles.coins} />
               <Modal isOpen={isModalOpen} transition={ModalTransition.SCALE}>
                 <BuyModal close={closeModal}  />

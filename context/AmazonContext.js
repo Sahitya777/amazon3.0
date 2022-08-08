@@ -29,6 +29,13 @@ export const AmazonProvider =({children})=>{
       error:assetsDataError,
       isLoading:assetsDataisLoading,
     }=useMoralisQuery('assets')
+
+    const {
+      data:userData,
+      error:userDataError,
+      isLoading:userDataisLoading
+    }=useMoralisQuery('__user')
+    console.log(userData);
     
     const getAssets= async()=>{
       try{
@@ -39,25 +46,35 @@ export const AmazonProvider =({children})=>{
       }
     }
     
-    useEffect(async()=>{
-      await enableWeb3()
-      await getAssets()
-    },[assetsData,assetsDataisLoading])
 
-    useEffect(async ()=>{
-      if(!isWeb3Enabled){
-        await enableWeb3()
+    const buyAssets=async(price,asset)=>{
+      try{
+        if(!isAuthenticated) return;
+
+        const options={
+          type:'erc20',
+          amount:price,
+          receiver:AmazonCoinAddress,
+          contractAddress:AmazonCoinAddress
+        }
+
+        let transaction=await Moralis.transfer(options)
+        const receipt=await transaction.wait()
+
+        if(receipt){
+          const res = userData[0].add('ownedAsset', {
+            ...asset,
+            purchaseDate: Date.now(),
+            etherscanLink: `https://rinkeby.etherscan.io/tx/${receipt.transactionHash}`,
+          })
+        }
+        await res.save().then(()=>{
+          alert("You've successfully purchased this asset!")
+        })
+      }catch(error){
+        console.log(error);
       }
-      if(isAuthenticated){
-          await getBalance()
-          const currentUsername = await user?.get('nickname')
-          setUsername(currentUsername)
-          const account=await user?.get('ethAddress')
-          setCurrentAccount(account)
-      }
-    },[isWeb3Enabled,isAuthenticated,user,username,currentAccount])
-
-
+    }
 
     const handleSetUsername = () => {
         if (user) {
@@ -124,7 +141,24 @@ export const AmazonProvider =({children})=>{
         )
       }
     
-
+      useEffect(async()=>{
+        await enableWeb3()
+        await getAssets()
+      },[assetsData,assetsDataisLoading]);
+  
+      useEffect(async ()=>{
+        if(!isWeb3Enabled){
+          await enableWeb3()
+        }
+        if(isAuthenticated){
+            await getBalance()
+            const currentUsername = await user?.get('nickname')
+            setUsername(currentUsername)
+            const account=await user?.get('ethAddress')
+            setCurrentAccount(account)
+        }
+      },[isWeb3Enabled,isAuthenticated,user,username,currentAccount,balance,setBalance])
+  
 
 
     return(
@@ -147,7 +181,8 @@ export const AmazonProvider =({children})=>{
                 currentAccount,
                 isLoading,
                 setIsLoading,
-                buyTokens
+                buyTokens,
+                buyAssets
             }}
         >
             {children}
