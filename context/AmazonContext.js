@@ -1,6 +1,6 @@
 import { createContext,useState,useEffect } from "react";
 import {useMoralis, useMoralisQuery} from 'react-moralis'
-import { amazonAbi,amazonCoinAddress } from "../lib/constants";
+import { AmazonCoinAddress, amazonAbi } from "../lib/constants";
 import { ethers } from "ethers";
 export const AmazonContext=createContext()
 
@@ -73,40 +73,41 @@ export const AmazonProvider =({children})=>{
         }
       }
 
-      const getBalance=async()=>{
-        try{
-          if(!isAuthenticated || currentAccount){
-            return;
-          }
-          const options={
-            contractAddress:amazonCoinAddress,
-            functionName:'balanceOf',
-            abi:amazonAbi,
-            params:{
-              account:currentAccount
+
+      const getBalance = async () => {
+        try {
+          if (!isAuthenticated || !currentAccount) return
+          const options = {
+            contractAddress: AmazonCoinAddress,
+            functionName: 'balanceOf',
+            abi: amazonAbi,
+            params: {
+              account: currentAccount,
             },
-
-
           }
-          if(isWeb3Enabled){
-            const response=await Moralis.executeFunction(options)
+    
+          if (isWeb3Enabled) {
+            const response = await Moralis.executeFunction(options)
+            console.log(response.toString())
             setBalance(response.toString())
           }
-        }catch(error){
-          console.log(error);
+        } catch (error) {
+          console.log(error)
         }
       }
-
-      const buyTokens=async()=>{
-        if(!isAuthenticated){
-          await authenticate()
+      const buyTokens = async () => {
+        if (!isAuthenticated) {
+          await connectWallet()
         }
-        const amount=ethers.BigNumber.from(tokenAmount);
+    
+        const amount = ethers.BigNumber.from(tokenAmount)
         const price = ethers.BigNumber.from('100000000000000')
         const calcPrice = amount.mul(price)
-
+    
+        console.log(AmazonCoinAddress)
+    
         let options = {
-          contractAddress: amazonCoinAddress,
+          contractAddress: AmazonCoinAddress,
           functionName: 'mint',
           abi: amazonAbi,
           msgValue: calcPrice,
@@ -114,14 +115,15 @@ export const AmazonProvider =({children})=>{
             amount,
           },
         }
-      const transaction = await Moralis.executeFunction(options)
-      const receipt = await transaction.wait(4)
-      setIsLoading(false)
-      console.log(receipt)
-      setEtherscanLink(
-        `https://rinkeby.etherscan.io/tx/${receipt.transactionHash}`,
-      )
+        const transaction = await Moralis.executeFunction(options)
+        const receipt = await transaction.wait()
+        setIsLoading(false)
+        console.log(receipt)
+        setEtherscanLink(
+          `https://rinkeby.etherscan.io/tx/${receipt.transactionHash}`,
+        )
       }
+    
 
 
 
