@@ -14,7 +14,8 @@ export const AmazonProvider =({children})=>{
     const [isLoading, setIsLoading] = useState(false)
     const [etherscanLink, setEtherscanLink] = useState('')
     const [currentAccount, setCurrentAccount] = useState('')
-
+    const [recentTransactions, setRecentTransactions] = useState([])
+    const [ownedItems, setOwnedItems] = useState([])
     const {
         authenticate,
         isAuthenticated,
@@ -45,6 +46,16 @@ export const AmazonProvider =({children})=>{
         console.log(error);
       }
     }
+
+    const listenToUpdates=async()=>{
+        let query=new Moralis.Query('EthTransactions')
+        let subscription=await query.subscribe()
+        subscription.on('update',async object=>{
+          console.log('New transaction')
+          console.log(object)
+          setRecentTransactions([object])
+        })
+    }
     
 
     const buyAssets=async(price,asset)=>{
@@ -67,10 +78,10 @@ export const AmazonProvider =({children})=>{
             purchaseDate: Date.now(),
             etherscanLink: `https://rinkeby.etherscan.io/tx/${receipt.transactionHash}`,
           })
+          await res.save().then(()=>{
+            alert("You've successfully purchased this asset!")
+          })
         }
-        await res.save().then(()=>{
-          alert("You've successfully purchased this asset!")
-        })
       }catch(error){
         console.log(error);
       }
@@ -152,12 +163,13 @@ export const AmazonProvider =({children})=>{
         }
         if(isAuthenticated){
             await getBalance()
+            await listenToUpdates()
             const currentUsername = await user?.get('nickname')
             setUsername(currentUsername)
             const account=await user?.get('ethAddress')
             setCurrentAccount(account)
         }
-      },[isWeb3Enabled,isAuthenticated,user,username,currentAccount,balance,setBalance])
+      },[isWeb3Enabled,isAuthenticated,user,username,currentAccount,balance,setBalance,listenToUpdates])
   
 
 
@@ -182,7 +194,8 @@ export const AmazonProvider =({children})=>{
                 isLoading,
                 setIsLoading,
                 buyTokens,
-                buyAssets
+                buyAssets,
+                recentTransactions
             }}
         >
             {children}
