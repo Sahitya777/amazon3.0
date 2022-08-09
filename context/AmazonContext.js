@@ -163,13 +163,12 @@ export const AmazonProvider =({children})=>{
         }
         if(isAuthenticated){
             await getBalance()
-            await listenToUpdates()
             const currentUsername = await user?.get('nickname')
             setUsername(currentUsername)
             const account=await user?.get('ethAddress')
             setCurrentAccount(account)
         }
-      },[isWeb3Enabled,isAuthenticated,user,username,currentAccount,balance,setBalance,listenToUpdates])
+      },[isWeb3Enabled,isAuthenticated,user,username,currentAccount,balance,setBalance])
   
 
 
