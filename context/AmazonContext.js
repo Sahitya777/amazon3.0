@@ -58,6 +58,7 @@ export const AmazonProvider =({children})=>{
       }
     }
 
+
     const listenToUpdates=async()=>{
         let query=new Moralis.Query('EthTransactions')
         let subscription=await query.subscribe()
@@ -176,13 +177,14 @@ export const AmazonProvider =({children})=>{
         await listenToUpdates()
         if(isAuthenticated){
             await getBalance()
+            await listenToUpdates()
 
             const currentUsername = await user?.get('nickname')
             setUsername(currentUsername)
             const account=await user?.get('ethAddress')
             setCurrentAccount(account)
         }
-      },[isWeb3Enabled,isAuthenticated,user,username,currentAccount,balance,setBalance])
+      },[isWeb3Enabled,isAuthenticated,user,username,currentAccount,balance,setBalance,listenToUpdates])
   
 
 
@@ -208,8 +210,12 @@ export const AmazonProvider =({children})=>{
                 setIsLoading,
                 buyTokens,
                 buyAssets,
+
                 recentTransactions,
                 ownedItems,
+
+
+                recentTransactions
 
             }}
         >
