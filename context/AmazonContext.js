@@ -16,6 +16,7 @@ export const AmazonProvider =({children})=>{
     const [currentAccount, setCurrentAccount] = useState('')
     const [recentTransactions, setRecentTransactions] = useState([])
     const [ownedItems, setOwnedItems] = useState([])
+
     const {
         authenticate,
         isAuthenticated,
@@ -36,12 +37,22 @@ export const AmazonProvider =({children})=>{
       error:userDataError,
       isLoading:userDataisLoading
     }=useMoralisQuery('__user')
-    console.log(userData);
     
     const getAssets= async()=>{
       try{
         await enableWeb3()
         setAssets(assetsData)
+      }catch(error){
+        console.log(error);
+      }
+    }
+    const getOwnedAssets=async ()=>{
+      try{
+        if(userData[0]){
+          setOwnedItems(prevItems=>[
+            ...prevItems,userData[0].attributes.ownedAssets
+          ])
+        }
       }catch(error){
         console.log(error);
       }
@@ -154,6 +165,7 @@ export const AmazonProvider =({children})=>{
     
       useEffect(async()=>{
         await enableWeb3()
+        await getOwnedAssets()
         await getAssets()
       },[assetsData,assetsDataisLoading]);
   
@@ -161,8 +173,10 @@ export const AmazonProvider =({children})=>{
         if(!isWeb3Enabled){
           await enableWeb3()
         }
+        await listenToUpdates()
         if(isAuthenticated){
             await getBalance()
+
             const currentUsername = await user?.get('nickname')
             setUsername(currentUsername)
             const account=await user?.get('ethAddress')
@@ -194,7 +208,9 @@ export const AmazonProvider =({children})=>{
                 setIsLoading,
                 buyTokens,
                 buyAssets,
-                recentTransactions
+                recentTransactions,
+                ownedItems,
+
             }}
         >
             {children}
